@@ -1263,7 +1263,7 @@ def _register_recall(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig)
             types: list[str] | None = None,
             prefer_observations: bool = False,
             tags: list[str] | None = None,
-            tags_match: str = "any",
+            tags_match: TagsMatch = "any",
             tag_groups: list[dict] | None = None,
             query_timestamp: str | None = None,
             min_scores: dict | None = None,
@@ -1283,7 +1283,7 @@ def _register_recall(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig)
                     duplicate content). Disabled by default; set true to enable. No effect unless
                     'observation' and a raw type are both in types. Default: False.
                 tags: Optional tags to filter results by (e.g., ['project:alpha']). Mutually exclusive with tag_groups.
-                tags_match: How to match tags - 'any' (match any tag) or 'all' (match all tags). Default: 'any'
+                tags_match: How to match tags - 'any', 'all', 'any_strict', 'all_strict' or 'exact'. The strict modes leave out untagged memories. Default: 'any'
                 tag_groups: Compound tag filter using boolean groups (AND-ed together). Each group is a leaf
                     {"tags": [...], "match": "any_strict"} or compound {"and": [...]}, {"or": [...]}, {"not": {...}}.
                     Example: [{"not": {"tags": ["closeout"], "match": "any_strict"}}] excludes memories tagged closeout.
@@ -1367,7 +1367,7 @@ def _register_recall(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig)
             types: list[str] | None = None,
             prefer_observations: bool = False,
             tags: list[str] | None = None,
-            tags_match: str = "any",
+            tags_match: TagsMatch = "any",
             tag_groups: list[dict] | None = None,
             query_timestamp: str | None = None,
             min_scores: dict | None = None,
@@ -1386,7 +1386,7 @@ def _register_recall(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig)
                     duplicate content). Disabled by default; set true to enable. No effect unless
                     'observation' and a raw type are both in types. Default: False.
                 tags: Optional tags to filter results by (e.g., ['project:alpha']). Mutually exclusive with tag_groups.
-                tags_match: How to match tags - 'any' (match any tag) or 'all' (match all tags). Default: 'any'
+                tags_match: How to match tags - 'any', 'all', 'any_strict', 'all_strict' or 'exact'. The strict modes leave out untagged memories. Default: 'any'
                 tag_groups: Compound tag filter using boolean groups (AND-ed together). Each group is a leaf
                     {"tags": [...], "match": "any_strict"} or compound {"and": [...]}, {"or": [...]}, {"not": {...}}.
                     Example: [{"not": {"tags": ["closeout"], "match": "any_strict"}}] excludes memories tagged closeout.
@@ -1470,7 +1470,7 @@ def _register_reflect(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig
             max_tokens: int = 4096,
             response_schema: dict | None = None,
             tags: list[str] | None = None,
-            tags_match: str = "any",
+            tags_match: TagsMatch = "any",
             apply_all_directives: bool = False,
             include_based_on: bool = False,
             include_trace: bool = False,
@@ -1502,7 +1502,7 @@ def _register_reflect(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig
                 max_tokens: Maximum tokens for the response (default: 4096)
                 response_schema: Optional JSON schema for structured output. When provided, the response includes a 'structured_output' field.
                 tags: Optional tags to filter memories by (e.g., ['project:alpha'])
-                tags_match: How to match tags - 'any' (match any tag) or 'all' (match all tags). Default: 'any'
+                tags_match: How to match tags - 'any', 'all', 'any_strict', 'all_strict' or 'exact'. The strict modes leave out untagged memories. Default: 'any'
                 apply_all_directives: Apply every active directive regardless of tags. By default directives are scoped like memories (untagged always apply; tagged apply only when tags match). Set true to apply all directives, ignoring tag scope.
                 include_based_on: Include source facts used for synthesis. Defaults to false because broad reflections can exceed MCP client result limits.
                 include_trace: Include the reflection's internal trace fields (tool_trace/llm_trace and directives_applied). Defaults to false because the trace can be tens of KB and overflow MCP client context; enable only for debugging.
@@ -1565,7 +1565,7 @@ def _register_reflect(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig
             max_tokens: int = 4096,
             response_schema: dict | None = None,
             tags: list[str] | None = None,
-            tags_match: str = "any",
+            tags_match: TagsMatch = "any",
             apply_all_directives: bool = False,
             include_based_on: bool = False,
             include_trace: bool = False,
@@ -1596,7 +1596,7 @@ def _register_reflect(mcp: FastMCP, memory: MemoryEngine, config: MCPToolsConfig
                 max_tokens: Maximum tokens for the response (default: 4096)
                 response_schema: Optional JSON schema for structured output. When provided, the response includes a 'structured_output' field.
                 tags: Optional tags to filter memories by (e.g., ['project:alpha'])
-                tags_match: How to match tags - 'any' (match any tag) or 'all' (match all tags). Default: 'any'
+                tags_match: How to match tags - 'any', 'all', 'any_strict', 'all_strict' or 'exact'. The strict modes leave out untagged memories. Default: 'any'
                 apply_all_directives: Apply every active directive regardless of tags. By default directives are scoped like memories (untagged always apply; tagged apply only when tags match). Set true to apply all directives, ignoring tag scope.
                 include_based_on: Include source facts used for synthesis. Defaults to false because broad reflections can exceed MCP client result limits.
                 include_trace: Include the reflection's internal trace fields (tool_trace/llm_trace and directives_applied). Defaults to false because the trace can be tens of KB and overflow MCP client context; enable only for debugging.

@@ -1779,6 +1779,40 @@ class TestListToolBounds:
         assert mock_memory.list_operations.call_args.kwargs["limit"] == 100
 
 
+@pytest.mark.asyncio
+class TestRecallReflectTagsMatch:
+    """#5371: recall/reflect reject an unknown tags_match the way HTTP does, instead of running it as 'any'."""
+
+    @pytest.fixture
+    def mock_memory(self, mock_memory):
+        mock_memory._config_resolver.get_bank_config = AsyncMock(return_value={})
+        mock_memory._operation_validator = None
+        return mock_memory
+
+    @pytest.mark.parametrize("include_bank_id", [True, False])
+    @pytest.mark.parametrize("tool", ["recall", "reflect"])
+    async def test_unknown_mode_is_rejected(self, mock_memory, tool, include_bank_id):
+        from pydantic import ValidationError
+
+        mcp = _make_mcp_server(mock_memory, {tool}, include_bank_id=include_bank_id)
+        with pytest.raises(ValidationError):
+            await _tools(mcp)[tool].run({"query": "q", "tags": ["typescript"], "tags_match": "any-strict"})
+        getattr(mock_memory, f"{tool}_async").assert_not_called()
+
+    @pytest.mark.parametrize("include_bank_id", [True, False])
+    @pytest.mark.parametrize("tool", ["recall", "reflect"])
+    async def test_schema_lists_the_five_modes(self, mock_memory, tool, include_bank_id):
+        mcp = _make_mcp_server(mock_memory, {tool}, include_bank_id=include_bank_id)
+        prop = _tools(mcp)[tool].parameters["properties"]["tags_match"]
+        assert prop["enum"] == ["any", "all", "any_strict", "all_strict", "exact"]
+        assert prop["default"] == "any"
+
+    async def test_strict_mode_reaches_the_engine(self, mock_memory):
+        mcp = _make_mcp_server(mock_memory, {"recall"}, include_bank_id=True)
+        await _tools(mcp)["recall"].run({"query": "q", "tags": ["typescript"], "tags_match": "any_strict"})
+        assert mock_memory.recall_async.call_args.kwargs["tags_match"] == "any_strict"
+
+
 # =========================================================================
 # Tags & Bank Tool Tests
 # =========================================================================
