@@ -17,10 +17,15 @@ const RS = "\x1e"; // record separator between commits in gitLogText
 const GITLOG_HEAD = "gitlog-head:"; // tag naming the commit the git-log document was written at
 
 function git(repo: string, ...args: string[]): string {
+  return gitWithEnv(repo, undefined, ...args);
+}
+
+function gitWithEnv(repo: string, env: NodeJS.ProcessEnv | undefined, ...args: string[]): string {
   // `log.showSignature=true` in the user's config makes `git log`/`git show` print signature
   // checks to stdout ahead of the formatted output, which we parse as data (#5269).
   return execFileSync("git", ["-C", repo, "-c", "log.showSignature=false", ...args], {
     encoding: "utf8",
+    env: env ? { ...process.env, ...env } : undefined,
     maxBuffer: 1 << 28,
     windowsHide: true,
     // execFileSync otherwise forwards failed git stderr into the host's TUI,
@@ -59,7 +64,13 @@ export function gitHeadSha(dir: string): string | null {
 export function commitsSince(dir: string, sinceSha: string): number | null {
   if (!/^[0-9a-f]{40}(?:[0-9a-f]{24})?$/.test(sinceSha)) return null;
   try {
-    const n = Number.parseInt(git(dir, "rev-list", "--count", `${sinceSha}..HEAD`).trim(), 10);
+    // In a partial clone git would lazily fetch a commit missing from the local object store: a
+    // multi-second promisor round trip that usually ends in "not our ref" (#5606). A partial clone
+    // still holds every commit it has fetched, so a missing one is simply not a reachable baseline.
+    // Scoped to this probe only: diff ingestion (`git show -p`) still needs lazy blob fetches. The
+    // env var (not `--no-lazy-fetch`) keeps git < 2.44 working; it just ignores the variable.
+    const out = gitWithEnv(dir, { GIT_NO_LAZY_FETCH: "1" }, "rev-list", "--count", `${sinceSha}..HEAD`);
+    const n = Number.parseInt(out.trim(), 10);
     return Number.isFinite(n) ? n : null;
   } catch {
     return null;
